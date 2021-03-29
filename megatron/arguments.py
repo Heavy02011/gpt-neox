@@ -317,7 +317,7 @@ def _add_training_args(parser):
                        help='Enable one bit adam optimizer [MUST BE USING DEEPSPEED]')
     group.add_argument('--sm3', action='store_true',
                        help='Enable sm3 optimizer')
-    group.add_argument('--mlperf_attn', action='store_true',
+    group.add_argument('--mlperf-attn', action='store_true',
                        help='use mlperf attn implementation')
     return parser
 
