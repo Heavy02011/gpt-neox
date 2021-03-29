@@ -78,7 +78,7 @@ class FastUnpadSelfAttention(MegatronModule):
         ntokens2 = 0
         for i in range(batch):
             ntokens2 += seqlen[i] * seqlen[i] * self.num_attention_heads
-        attention_probs = torch.zeros(ntokens2, device="cuda", dtype=torch.float16)
+        attention_probs = torch.zeros(ntokens2, device=torch.cuda.current_device(), dtype=torch.float16)
         ntokens2 = 0
         for i in range(batch):
             tokens2 = seqlen[i] * seqlen[i] * self.num_attention_heads

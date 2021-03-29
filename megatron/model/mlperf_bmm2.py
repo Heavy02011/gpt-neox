@@ -18,7 +18,7 @@ class Bmm2Function(torch.autograd.Function):
         ntokens = seqlen.sum().item()
         ctx.ntokens = ntokens
 
-        output = torch.empty([ntokens, heads, embed], device="cuda", dtype=torch.float16)
+        output = torch.empty([ntokens, heads, embed], device=torch.cuda.current_device(), dtype=torch.float16)
         mhalib.FastBmm2Fprop(batch2.flatten().contiguous(), batch1.flatten().contiguous(), output, batch, seqlen, heads,
                              embed, False, False, stream, sync)
 
@@ -36,8 +36,8 @@ class Bmm2Function(torch.autograd.Function):
         for i in range(batch):
             ntokens2 += seqlen[i] * seqlen[i]
 
-        grad_batch1 = torch.empty([ntokens2 * heads], device="cuda", dtype=torch.float16)
-        grad_batch2 = torch.empty([ntokens, heads * embed], device="cuda", dtype=torch.float16)
+        grad_batch1 = torch.empty([ntokens2 * heads], device=torch.cuda.current_device(), dtype=torch.float16)
+        grad_batch2 = torch.empty([ntokens, heads * embed], device=torch.cuda.current_device(), dtype=torch.float16)
 
         mhalib.FastBmm2Dgrad1(batch2.flatten().contiguous(), grad_output, grad_batch1, batch, seqlen, heads, embed,
                               False, False, ctx.stream, ctx.sync)
@@ -79,7 +79,7 @@ class Bmm2StridedFunction(torch.autograd.Function):
         ntokens = seqlen.sum().item()
         ctx.ntokens = ntokens
 
-        output = torch.empty([ntokens, heads, embed], device="cuda", dtype=torch.float16)
+        output = torch.empty([ntokens, heads, embed], device=torch.cuda.current_device(), dtype=torch.float16)
 
         if timers: timers['start_fprop'].record()
         mhalib.FastBmm2Fprop(mixed, batch1, output, batch, seqlen, heads, embed, False, True, stream, sync)
@@ -100,8 +100,8 @@ class Bmm2StridedFunction(torch.autograd.Function):
         for i in range(batch):
             ntokens2 += seqlen[i] * seqlen[i]
 
-        grad_batch1 = torch.empty(ntokens2 * heads, device="cuda", dtype=torch.float16)
-        grad_mixed = torch.empty([ntokens, heads * 3 * embed], device="cuda", dtype=torch.float16)
+        grad_batch1 = torch.empty(ntokens2 * heads, device=torch.cuda.current_device(), dtype=torch.float16)
+        grad_mixed = torch.empty([ntokens, heads * 3 * embed], device=torch.cuda.current_device(), dtype=torch.float16)
 
         if ctx.timers: ctx.timers['start_dgrad'].record()
         mhalib.FastBmm2Dgrad1(mixed, grad_output, grad_batch1, batch, seqlen, heads, embed, False, True, ctx.stream,

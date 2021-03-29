@@ -11,7 +11,7 @@
 #include <ATen/cuda/CUDAContext.h>
 #include <torch/extension.h>
 #include <math.h>
-#include "/opt/pytorch/apex/apex/contrib/csrc/multihead_attn/softmax.h"
+#include "/home/mchorse/apex/apex/contrib/csrc/multihead_attn/softmax.h"
 
 #define nstreams 16
 

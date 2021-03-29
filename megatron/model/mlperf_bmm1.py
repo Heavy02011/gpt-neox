@@ -22,7 +22,8 @@ class Bmm1Function(torch.autograd.Function):
         for i in range(batch):
             ntokens2 += seqlen[i] * seqlen[i]
 
-        output = torch.empty(ntokens2 * heads, device="cuda", dtype=torch.float16)
+        ntokens2 = int(ntokens2.item())
+        output = torch.empty(ntokens2 * heads, device=torch.cuda.current_device(), dtype=torch.float16)
         mhalib.FastBmm1Fprop(batch2.flatten().contiguous(), batch1.flatten().contiguous(),
                              output.flatten().contiguous(), batch, seqlen, heads, embed, scale, False, stream, sync)
 
@@ -37,8 +38,8 @@ class Bmm1Function(torch.autograd.Function):
         embed = ctx.embed
         ntokens = ctx.ntokens
 
-        grad_batch1 = torch.empty(ntokens, heads * embed, device="cuda", dtype=torch.float16)
-        grad_batch2 = torch.empty(ntokens, heads * embed, device="cuda", dtype=torch.float16)
+        grad_batch1 = torch.empty(ntokens, heads * embed, device=torch.cuda.current_device(), dtype=torch.float16)
+        grad_batch2 = torch.empty(ntokens, heads * embed, device=torch.cuda.current_device(), dtype=torch.float16)
 
         mhalib.FastBmm1Dgrad2(batch2.flatten().contiguous(), grad_output.flatten().contiguous(),
                               grad_batch1.flatten().contiguous(), batch, seqlen, heads, embed, ctx.scale, False,
@@ -87,7 +88,7 @@ class Bmm1StridedFunction(torch.autograd.Function):
         for i in range(batch):
             ntokens2 += seqlen[i] * seqlen[i]
 
-        output = torch.empty(ntokens2 * heads, device="cuda", dtype=torch.float16)
+        output = torch.empty(ntokens2 * heads, device=torch.cuda.current_device(), dtype=torch.float16)
 
         if timers: timers['start_fprop'].record()
         mhalib.FastBmm1Fprop(mixed, mixed, output, batch, seqlen, heads, embed, scale, True, stream, sync)

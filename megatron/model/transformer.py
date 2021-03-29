@@ -332,7 +332,7 @@ class ParallelSelfAttention(MegatronModule):
                                                          enable_sync=True,
                                                          fuse_mask=True,
                                                          fuse_scale=True,
-                                                         fuse_qkv=True,
+                                                         fuse_qkv=False,
                                                          fuse_dropout=True,
                                                          apex_softmax=True,
                                                          pad=True)
@@ -451,7 +451,7 @@ class ParallelSelfAttention(MegatronModule):
                                             get_key_value)
         elif self.mlperf_attn:
             batch_size = query_layer.size(1)
-            context_layer = self.dense_attn((query_layer, key_layer, value_layer), attention_mask, self.seq_length,
+            context_layer = self.dense_attn((query_layer, key_layer, value_layer), attention_mask, torch.Tensor([self.seq_length]*batch_size),
                                             batch_size, self.training)
         else:
             # shape of q/k/v is [sq, b, np, hn] and needs to be transposed to [b, np, sq, hn]

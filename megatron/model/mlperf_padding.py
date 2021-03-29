@@ -38,13 +38,13 @@ def generate_mask(attention_mask, heads, pad=False, fuse_mask=True):
     indices = torch.nonzero(padded_mask.flatten(), as_tuple=False).flatten()
 
     if pad == False and fuse_mask == True:
-        mask = torch.zeros([ntokens], device="cuda", dtype=torch.float16)
+        mask = torch.zeros([ntokens], device=torch.cuda.current_device(), dtype=torch.float16)
         unpad_mask(mask, attention_mask, indices)
         mask = (1 - mask) * -10000.0
     elif pad == False and fuse_mask == False:
         padded_mask = (padded_mask.unsqueeze(1) * padded_mask.unsqueeze(2)).unsqueeze(1).half().repeat(1, heads, 1, 1)
         indices_mask = torch.nonzero(padded_mask.flatten(), as_tuple=False).flatten()
-        mask = torch.zeros([len(indices_mask)], device="cuda", dtype=torch.float16)
+        mask = torch.zeros([len(indices_mask)], device=torch.cuda.current_device(), dtype=torch.float16)
         unpad_mask(mask, padded_mask, indices_mask)
         mask = (1 - mask) * -10000.0
     elif pad == True and fuse_mask == True:
@@ -66,7 +66,7 @@ class PadInput(torch.autograd.Function):
         ctx.ntokens = ntokens
         ntokens = batch * maxseqlen
 
-        output = torch.zeros([ntokens, hidden], device="cuda", dtype=torch.float16)
+        output = torch.zeros([ntokens, hidden], device=torch.cuda.current_device(), dtype=torch.float16)
         pad_input(output, input, indices)
 
         return output[:ntokens]
@@ -75,7 +75,7 @@ class PadInput(torch.autograd.Function):
     def backward(ctx, grad_output):
         indices, = ctx.saved_tensors
 
-        grad_input = torch.zeros([ctx.ntokens, ctx.hidden], device="cuda", dtype=torch.float16)
+        grad_input = torch.zeros([ctx.ntokens, ctx.hidden], device=torch.cuda.current_device(), dtype=torch.float16)
         unpad_input(grad_input, grad_output, indices)
 
         return grad_input[:ctx.ntokens], None, None, None, None, None
@@ -90,7 +90,7 @@ class UnpadInput(torch.autograd.Function):
         ctx.hidden = hidden
         ctx.ntokens = batch * maxseqlen
 
-        output = torch.zeros([ntokens, hidden], device="cuda", dtype=torch.float16)
+        output = torch.zeros([ntokens, hidden], device=torch.cuda.current_device(), dtype=torch.float16)
         unpad_input(output, input, indices)
 
         return output[:ntokens]
@@ -99,7 +99,7 @@ class UnpadInput(torch.autograd.Function):
     def backward(ctx, grad_output):
         indices, = ctx.saved_tensors
 
-        grad_input = torch.zeros([ctx.ntokens, ctx.hidden], device="cuda", dtype=torch.float16)
+        grad_input = torch.zeros([ctx.ntokens, ctx.hidden], device=torch.cuda.current_device(), dtype=torch.float16)
         pad_input(grad_input, grad_output, indices)
 
         return grad_input[:ctx.ntokens], None, None, None, None, None
