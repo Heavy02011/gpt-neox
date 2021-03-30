@@ -211,6 +211,7 @@ def _add_network_size_args(parser):
                             'reasons.')
     group.add_argument('--onnx-safe', type=bool, required=False,
                        help='Use workarounds for known problems with Torch ONNX exporter')
+    group.add_argument('--mo-tr', action='store_true')
 
     return parser
 
